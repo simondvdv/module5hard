@@ -1,23 +1,20 @@
 import keyboard
+import time
+
+
 class User:
-    user_dict = {}
     user_list = []
 
     def __init__(self, name, password, age=None):
         self.name = name
         self.password = hash(password)
         self.age = age
-        if self.name not in User.user_dict.keys():
-            User.user_dict[self.name] = self.password
-            User.user_list.append(self)
-        else:
-            print('Такой пользователь уже есть')
 
     def __str__(self):
-        return f'name: {self.name}\npassword: {self.password}\nage: {self.age}'
-
+        return self.name
 
 class Video:
+    video_names_list = []
     video_list = []
 
     def __init__(self, title, duration, time_now=0, adult_mode=False):
@@ -25,11 +22,9 @@ class Video:
         self.duration = duration
         self.time_now = time_now
         self.adult_mode = adult_mode
-        if title not in Video.video_list:
-            Video.video_list.append(title)
 
 
-class UrVideo:
+class UrTube:
     def __init__(self, users, videos, current_user=None):
         self.users = users
         self.videos = videos
@@ -43,84 +38,77 @@ class UrVideo:
             self.current_user = nickname
 
     def register(self, name, password, age=None):
-        self.name = name
-        self.password = hash(password)
-        self.age = age
-        if self.name not in User.user_dict.keys():
-            User.user_dict[self.name] = self.password
-            User.user_list.append(self)
-            self.current_user = name
-        else:
-            print('Такой пользователь уже есть')
+        for i in User.user_list:
+            if name == i.name:
+                print(f'Пользователь {name} уже существует')
+                return
+        self.current_user = User(name, password, age)
+        User.user_list.append(User(name, password, age))
 
     def log_out(self):
         self.current_user = None
 
     def add(self, *video_list):
         for i in video_list:
-            if i not in Video.video_list:
+            if i.title not in Video.video_names_list:
                 Video.video_list.append(i)
+                Video.video_names_list.append(i.title)
 
     def get_videos(self, check_word):
         check_word = check_word.lower()
         founded_videos = []
         for i in Video.video_list:
-            if check_word in i.lower().split(' '):
-                founded_videos.append(i)
+            if check_word in i.title.lower():
+                founded_videos.append(i.title)
         if len(founded_videos) == 0:
-            print('По вашему запросу ничего не найдено')
-        else:
-            print('По вашему запросу есть следующие видео:')
-            j = 1
-            for i in founded_videos:
-                print(f'{j}. {i}')
-                j += 1
+            return 'По вашему запросу ничего не найдено'
+        return founded_videos
 
-    def watch_video(self):
-        pass
-
-    def __str__(self):
-        return f'{self.users.keys()}'
-
-
-user = User('Alex', 'qwer1234', 23)
-user2 = User('Alexx', 'qwer14', 23)
-print(user)
-print(User.user_dict)
-print(User.user_list)
-urvideo = UrVideo(User.user_dict, Video.video_list)
-print(urvideo.current_user)
-urvideo.register('Den', '4321', 40)
-print(User.user_dict)
-print(User.user_list)
-user3 = User('Alex', 'qwer1234', 23)
-print(User.user_dict)
-print(User.user_list)
-urvideo.register('Den', '4321', 40)
-print(User.user_dict)
-print(User.user_list)
-print(urvideo.current_user)
-urvideo.log_out()
-print(urvideo.current_user)
-video1 = Video('qwe', 0, 0, False)
-urvideo.add('123', 'qwe', 'qwt1q')
-print(Video.video_list)
-urvideo.add('123', 'husky', 'Qwe tewtw', '321 123')
-print(Video.video_list)
-print('qwe' in 'rwqfe qewdwe qwe sdecse'.split(' '))
-urvideo.get_videos('vwtb')
-urvideo.get_videos('qwe')
+    def watch_video(self, videos_name):
+        if self.current_user is None:
+            print('Войдите в аккаунт, чтобы смотреть видео')
+            return
+        for i in Video.video_list:
+            if videos_name == i.title:
+                if i.adult_mode is True and self.current_user.age < 18:
+                    print('Вам нет 18 лет, пожалуйста покиньте страницу')
+                    return
+                else:
+                    while True:
+                        print(i.time_now)
+                        time.sleep(1)
+                        i.time_now += 1
+                        if i.time_now == i.duration + 1:
+                            print('Конец видео')
+                            break
+                        if keyboard.is_pressed(' '):
+                            break
+            else:
+                continue
+        return
 
 
-import time
+ur = UrTube(User.user_list, Video.video_list)
+v1 = Video('Лучший язык программирования 2024 года', 200)
+v2 = Video('Для чего девушкам парень программист?', 10, adult_mode=True)
 
-sec = 0
+# Добавление видео
+ur.add(v1, v2)
 
-while True:
-    print(sec)
-    time.sleep(1)
-    sec += 1
-    if sec == 5:
-        break
-    if keyboard.is_pressed(' '):
-        break
+# Проверка поиска
+print(ur.get_videos('лучший'))
+print(ur.get_videos('ПРОГ'))
+
+# Проверка на вход пользователя и возрастное ограничение
+ur.watch_video('Для чего девушкам парень программист?')
+ur.register('vasya_pupkin', 'lolkekcheburek', 13)
+ur.watch_video('Для чего девушкам парень программист?')
+ur.register('urban_pythonist', 'iScX4vIJClb9YQavjAgF', 25)
+ur.watch_video('Для чего девушкам парень программист?')
+
+# Проверка входа в другой аккаунт
+ur.register('vasya_pupkin', 'F8098FM8fjm9jmi', 55)
+print(ur.current_user)
+
+# Попытка воспроизведения несуществующего видео
+ur.watch_video('Лучший язык программирования 2024 года!')
