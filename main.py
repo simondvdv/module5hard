@@ -16,6 +16,7 @@ class User:
 class Video:
     video_names_list = []
     time_now = 0
+
     def __init__(self, title, duration, adult_mode=False):
         self.title = title
         self.duration = duration
@@ -26,7 +27,7 @@ class UrTube:
     user_list = []
     video_list = []
 
-    def __init__(self,current_user=None):
+    def __init__(self, current_user=None):
         self.current_user = current_user
 
     def log_in(self, nickname, password):
