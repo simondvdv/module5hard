@@ -24,14 +24,16 @@ class Video:
 
 
 class UrTube:
-    user_list = []
-    video_list = []
+    # user_list = []
+    # video_list = []
 
-    def __init__(self, current_user=None):
+    def __init__(self, current_user=None, user_list=[], video_list=[]):
+        self.users = user_list
+        self.videos = video_list
         self.current_user = current_user
 
     def log_in(self, nickname, password):
-        for i in UrTube.user_list:
+        for i in self.users:
             if nickname == i.name and password == hash(i.password):
                 self.current_user = nickname
             elif nickname == i.name and password != hash(i.password):
@@ -40,12 +42,12 @@ class UrTube:
                 print('Такого пользователя нет')
 
     def register(self, name, password, age=None):
-        for i in UrTube.user_list:
+        for i in self.users:
             if name == i.name:
                 print(f'Пользователь {name} уже существует')
                 return
         self.current_user = User(name, password, age)
-        UrTube.user_list.append(User(name, password, age))
+        self.users.append(User(name, password, age))
 
     def log_out(self):
         self.current_user = None
@@ -53,13 +55,13 @@ class UrTube:
     def add(self, *video_list):
         for i in video_list:
             if i.title not in Video.video_names_list:
-                UrTube.video_list.append(i)
-                Video.video_names_list.append(i.title)
+                self.videos.append(i)
+
 
     def get_videos(self, check_word):
         check_word = check_word.lower()
         founded_videos = []
-        for i in UrTube.video_list:
+        for i in self.videos:
             if check_word in i.title.lower():
                 founded_videos.append(i.title)
         if len(founded_videos) == 0:
@@ -70,7 +72,7 @@ class UrTube:
         if self.current_user is None:
             print('Войдите в аккаунт, чтобы смотреть видео')
             return
-        for i in UrTube.video_list:
+        for i in self.videos:
             if videos_name == i.title:
                 if i.adult_mode is True and self.current_user.age < 18:
                     print('Вам нет 18 лет, пожалуйста покиньте страницу')
